@@ -26,15 +26,31 @@ const DynamicInput: React.FC = () => {
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      if (
-        e.key === "Backspace" &&
-        inputValue === "" &&
-        inputElements.length > 0
-      ) {
-        setInputElements((prev) => prev.slice(0, -1));
+      // Handle backspace key when input is empty
+      if (e.key === "Backspace" && inputValue === "" && inputElements.length > 0) {
+        const lastElement = inputElements[inputElements.length - 1];
+
+        if (typeof lastElement === "object") {
+          // If the last element is a tag, remove it in one go
+          setInputElements((prev) => prev.slice(0, -1));
+        } else {
+          // If the last element is a string, delete characters one by one
+          setInputElements((prev) => {
+            const newElements = [...prev];
+            const lastString = newElements[newElements.length - 1] as string;
+
+            if (lastString.length > 1) {
+              newElements[newElements.length - 1] = lastString.slice(0, -1); // Remove one character
+            } else {
+              newElements.pop(); // Remove the entire string if it's a single character
+            }
+
+            return newElements;
+          });
+        }
       }
     },
-    [inputValue, inputElements.length]
+    [inputValue, inputElements]
   );
 
   const handleInputBlur = useCallback(() => {
